@@ -5,3 +5,4 @@ langchain_core
 python-dotenv
 pydantic
 google-cloud-run
+markdown

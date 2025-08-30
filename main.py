@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
+import markdown
 
 # Load environment variables (this is fine for local testing, but remember to configure them on Render)
 load_dotenv()
@@ -52,10 +53,11 @@ async def analyze_log(request: LogAnalysisRequest):
         logs_json = [log.log_data for log in request.logs]
         formatted_prompt = prompt_template.format(logs_json=logs_json)
         response = llm.invoke(formatted_prompt)
-
+        html_content = markdown.markdown(response.content)
         return {
             "status": "success",
             "analysis": response.content,
+            "analysis_html": html_content,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
