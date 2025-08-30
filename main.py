@@ -6,14 +6,18 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
-import uvicorn
 
+# Load environment variables (this is fine for local testing, but remember to configure them on Render)
 load_dotenv()
 gemini_api_key = os.getenv("GEMINI_API_KEY")
 
 if not gemini_api_key:
+    # This will prevent the app from starting if the key is missing
     raise ValueError("GEMINI_API_KEY environment variable not set.")
 
+# Initialize the FastAPI app instance
+# In a production environment like Render, this 'app' instance is directly imported
+# and served by the platform's web server (e.g., Gunicorn or Uvicorn).
 app = FastAPI(title="Serverless GenAI Log Analyzer")
 llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=gemini_api_key)
 
@@ -29,6 +33,11 @@ prompt_template = PromptTemplate.from_template(
     "Summarize your findings, and provide key insights. "
     "Here are the network logs:\n\n{logs_json}"
 )
+
+# Added a root endpoint to test if the server is alive
+@app.get("/")
+async def root():
+    return {"message": "Serverless GenAI Log Analyzer is running!"}
 
 @app.post("/analyze-log", tags=["Log Analysis"])
 async def analyze_log(request: LogAnalysisRequest):
@@ -49,6 +58,3 @@ async def analyze_log(request: LogAnalysisRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8080)
