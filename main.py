@@ -9,11 +9,12 @@ from langchain_core.prompts import PromptTemplate
 
 # Load environment variables (this is fine for local testing, but remember to configure them on Render)
 load_dotenv()
-gemini_api_key = os.getenv("GEMINI_API_KEY")
+# Try both GEMINI_API_KEY and GOOGLE_API_KEY for compatibility
+gemini_api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 
 if not gemini_api_key:
     # This will prevent the app from starting if the key is missing
-    raise ValueError("GEMINI_API_KEY environment variable not set.")
+    raise ValueError("Google API key not set. Please set GEMINI_API_KEY or GOOGLE_API_KEY as an environment variable.")
 
 # Initialize the FastAPI app instance
 # In a production environment like Render, this 'app' instance is directly imported
